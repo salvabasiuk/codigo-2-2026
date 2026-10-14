@@ -1,61 +1,132 @@
--br">
-
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de senha</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Senhas Seguras</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <section class="conteudo">
-        <div class="conteudo-titulo">
-            <img src="unlock.svg" alt="cadeado fechado">
-            <h2 class="titulo-principal">Gerador de senhas</h2>
-            <h3 class="titulo-secundario">Gere instantaneamente uma senha aleatória e segura</h3>
-        </div>
-        <div class="conteudo-senha">
-            <label for="senha">Senha</label>
-            <input name="senha" type="text" id="campo-senha">
-        </div>
-        <div class="parametro">
-            <h3 class="parametro-titulo">Personalize sua senha</h3>
-            <div class="parametro-coluna__senha">
-                <div class="parametro-senha">
-                    <h4 class="parametro-senha__titulo">Número de caracteres</h4>
-                    <div class="parametro-senha-botoes">
-                        <button class="parametro-senha__botao">-</button>
-                        <p class="parametro-senha__texto">12</p>
-                        <button class="parametro-senha__botao">+</button>
-                    </div>
-                </div>
-                <div class="parametro-senha">
-                    <h4 class="parametro-senha__titulo">Características da senha</h4>
-                    <div class="parametro-senha">
-                        <h4 class="parametro-senha__titulo">Características da senha</h4>
-                        <div class="parametro-senha-checkbox">
-                            <input name="maiusculo" type="checkbox" class="checkbox" checked>
-                            <label for="maiusculo">Letras maiúsculas</label>
-                        </div>
-                        <div class="parametro-senha-checkbox">
-                            <input name="minusculo" type="checkbox" class="checkbox">
-                            <label for="minusculo">Letras minúsculas</label>
-                        </div>
-                        <div class="parametro-senha-checkbox">
-                            <input name="numero" type="checkbox" class="checkbox">
-                            <label for="numero">Números</label>
-                        </div>
-                        <div class="parametro-senha-checkbox">
-                            <input name="simbolo" type="checkbox" class="checkbox">
-                            <label for="simbolo">Símbolos</label>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="parametro-senha">
-                    <h4 class="parametro-senha__titulo">Força da senha</h4>
-                </div>
-            </div>
-        </div>
-    </section>
+  <div class="card">
+    <h1>Segurança Digital: Gerador de Senhas</h1>
+
+    <div class="output-group">
+      <input type="text" id="password" readonly placeholder="Sua senha aparecerá aqui">
+      <button onclick="copiarSenha()" id="btn-copy">Copiar</button>
+    </div>
+
+    <div class="slider-container">
+      <div class="slider-header">
+        <span>Tamanho da senha:</span>
+        <span id="length-val">12</span>
+      </div>
+      <input type="range" id="length" min="4" max="32" value="12" oninput="atualizarTamanho(this.value)">
+    </div>
+
+    <div class="option-group">
+      <label><input type="checkbox" id="uppercase" checked onchange="gerarSenha()"> Incluir letras maiúsculas (A-Z)</label>
+    </div>
+    <div class="option-group">
+      <label><input type="checkbox" id="lowercase" checked onchange="gerarSenha()"> Incluir letras minúsculas (a-z)</label>
+    </div>
+    <div class="option-group">
+      <label><input type="checkbox" id="numbers" checked onchange="gerarSenha()"> Incluir números (0-9)</label>
+    </div>
+    <div class="option-group">
+      <label><input type="checkbox" id="symbols" checked onchange="gerarSenha()"> Incluir símbolos (!@#$%)</label>
+    </div>
+
+    <button class="btn-generate" onclick="gerarSenha()">Gerar Nova Senha</button>
+
+    <div class="info-panel">
+      <p><strong>Conceito Matemático Aplicado:</strong></p>
+      <p>Tamanho do alfabeto de opções (N): <span id="alphabet-size" class="entropy-value">0</span> caracteres</p>
+      <p>Combinações possíveis (N^L): <span id="combinations" class="entropy-value">0</span></p>
+      <p>Entropia estimada: <span id="entropy" class="entropy-value">0</span> bits</p>
+    </div>
+  </div>
+
+  <script>
+    const CHAR_SETS = {
+      uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      lowercase: 'abcdefghijklmnopqrstuvwxyz',
+      numbers: '0123456789',
+      symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    };
+
+    function atualizarTamanho(val) {
+      document.getElementById('length-val').innerText = val;
+      gerarSenha();
+    }
+
+    function gerarSenha() {
+      const length = parseInt(document.getElementById('length').value);
+      const useUpper = document.getElementById('uppercase').checked;
+      const useLower = document.getElementById('lowercase').checked;
+      const useNum = document.getElementById('numbers').checked;
+      const useSym = document.getElementById('symbols').checked;
+
+      let validChars = '';
+      if (useUpper) validChars += CHAR_SETS.uppercase;
+      if (useLower) validChars += CHAR_SETS.lowercase;
+      if (useNum) validChars += CHAR_SETS.numbers;
+      if (useSym) validChars += CHAR_SETS.symbols;
+
+      const passwordInput = document.getElementById('password');
+
+      if (validChars.length === 0) {
+        passwordInput.value = 'Selecione ao menos 1 opção';
+        atualizarMatematica(0, length);
+        return;
+      }
+
+      let password = '';
+      for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * validChars.length);
+        password += validChars[randomIndex];
+      }
+
+      passwordInput.value = password;
+      atualizarMatematica(validChars.length, length);
+    }
+
+    function atualizarMatematica(alphabetSize, length) {
+      document.getElementById('alphabet-size').innerText = alphabetSize;
+      
+      if (alphabetSize === 0) {
+        document.getElementById('combinations').innerText = '0';
+        document.getElementById('entropy').innerText = '0';
+        return;
+      }
+
+      // Cálculo combinatório: N^L
+      const combinations = Math.pow(alphabetSize, length);
+      
+      // Formatação para notação científica se o número for muito grande
+      const combinationsFormatted = combinations > 1e12 
+        ? combinations.toExponential(2) 
+        : combinations.toLocaleString('pt-BR');
+
+      // Entropia = L * log2(N)
+      const entropy = Math.round(length * Math.log2(alphabetSize));
+
+      document.getElementById('combinations').innerText = combinationsFormatted;
+      document.getElementById('entropy').innerText = entropy;
+    }
+
+    function copiarSenha() {
+      const passwordInput = document.getElementById('password');
+      if (!passwordInput.value || passwordInput.value.startsWith('Selecione')) return;
+
+      navigator.clipboard.writeText(passwordInput.value);
+      const btnCopy = document.getElementById('btn-copy');
+      btnCopy.innerText = 'Copiado!';
+      setTimeout(() => btnCopy.innerText = 'Copiar', 2000);
+    }
+
+    // Gerar senha inicial ao carregar a página
+    window.onload = gerarSenha;
+  </script>
 </body>
+</html>
